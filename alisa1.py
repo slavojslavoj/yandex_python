@@ -1,11 +1,37 @@
+import datetime as dt
+
 DATABASE = {
     'Сергей': 'Омск',
     'Соня': 'Москва',
+    'Алексей': 'Калининград',
     'Миша': 'Москва',
     'Дима': 'Челябинск',
     'Алина': 'Красноярск',
     'Егор': 'Пермь',
-    'Коля': 'Красноярск'
+    'Коля': 'Красноярск',
+    'Артём': 'Владивосток',
+    'Петя': 'Михайловка'
+}
+
+UTC_OFFSET = {
+    'Москва': 3,
+    'Санкт-Петербург': 3,
+    'Новосибирск': 7,
+    'Екатеринбург': 5,
+    'Нижний Новгород': 3,
+    'Казань': 3,
+    'Челябинск': 5,
+    'Омск': 6,
+    'Самара': 4,
+    'Ростов-на-Дону': 3,
+    'Уфа': 5,
+    'Красноярск': 7,
+    'Воронеж': 3,
+    'Пермь': 5,
+    'Волгоград': 4,
+    'Краснодар': 3,
+    'Калининград': 2,
+    'Владивосток': 10
 }
 
 
@@ -16,6 +42,13 @@ def format_count_friends(count_friends):
         return f'{count_friends} друга'
     else:
         return f'{count_friends} друзей'
+
+
+def what_time(city):
+    offset = UTC_OFFSET[city]
+    city_time = dt.datetime.utcnow() + dt.timedelta(hours=offset)
+    f_time = city_time.strftime("%H:%M")
+    return f_time
 
 
 def process_anfisa(query):
@@ -33,6 +66,30 @@ def process_anfisa(query):
         return '<неизвестный запрос>'
 
 
+def process_friend(name, query):
+    if name in DATABASE:
+        city = DATABASE[name]
+        if query == 'ты где?':
+            return f'{name} в городе {city}'
+        elif query == 'который час?':
+            if city in UTC_OFFSET: return f'Там сейчас {what_time(city)}'
+            else:
+                return f'<не могу определить время в городе {DATABASE [name]}>'
+        else:
+            return '<неизвестный запрос>'
+    else:
+        return f'У тебя нет друга по имени {name}'
+
+
+def process_query(query):
+    tokens = query.split(', ')
+    name = tokens[0]
+    if name == 'Анфиса':
+        return process_anfisa(tokens[1])
+    else:
+        return process_friend(name, tokens[1])
+
+
 def runner():
     queries = [
         'Анфиса, сколько у меня друзей?',
@@ -41,27 +98,14 @@ def runner():
         'Анфиса, кто виноват?',
         'Коля, ты где?',
         'Соня, что делать?',
-        'Антон, ты где?'
+        'Антон, ты где?',
+        'Алексей, который час?',
+        'Артём, который час?',
+        'Антон, который час?',
+        'Петя, который час?'
     ]
     for query in queries:
         print(query, '-', process_query(query))
-        
-def process_query(query):
-    tokens = query.split (', ')
-    name = tokens[0]
-    if name == 'Анфиса': 
-        return process_anfisa(tokens[1])
-    else: 
-        return process_friend(name, tokens[1])
-    
-def process_friend(name, query):
-    if name in DATABASE:
-        if query == 'ты где?':
-            city = DATABASE[name]
-            return f'{name} в городе {city}'
-        else: 
-            return '<неизвестный запрос>'
-    else: 
-        return f'У тебя нет друга по имени {name}'
-    
+
+
 runner()
